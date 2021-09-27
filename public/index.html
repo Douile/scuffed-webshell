@@ -46,6 +46,11 @@ ws.addEventListener('message', function(ev) {
   w(ev.data);
 });
 
+ws.addEventListener('close', function() {
+  w('Connection closed...');
+  input.disabled = true;
+});
+
 input.addEventListener('keydown', function(ev) {
   if (ev.keyCode === 13) {
     ws.send(input.value+'\n');
