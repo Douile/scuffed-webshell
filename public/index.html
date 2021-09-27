@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Totally not scuffed web shell</title>
+<style>
+body {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  margin: 0;
+  padding: 3em;
+  top: 0;
+  left: 0;
+}
+#shell-output {
+  overflow: auto;
+}
+* {
+  box-sizing: border-box;
+}
+</style>
+  </head>
+  <body>
+    <pre id="shell-output"></pre>
+    <input type="text" id="shell-input" placeholder="Type here (enter to send)"/>
+    <script>
+const input = document.getElementById('shell-input');
+const output = document.getElementById('shell-output');
+function w(t) {
+  output.appendChild(document.createTextNode(t));
+  output.scrollTop = output.scrollHeight;
+}
+
+const wsURL = new URL('/shell', location.href);
+wsURL.protocol = 'ws:';
+const ws = new WebSocket(wsURL);
+
+ws.addEventListener('message', function(ev) {
+  w(ev.data);
+});
+
+input.addEventListener('keydown', function(ev) {
+  if (ev.keyCode === 13) {
+    ws.send(input.value+'\n');
+    w(input.value+'\n');
+    input.value = '';
+  }
+});
+input.addEventListener('compositionupdate', function(ev) {
+  if (ev.data.includes('\n')) {
+    ws.send(input.value);
+    w(input.value);
+    input.value = '';
+  }
+});
+    </script>
+  </body>
+</html>
