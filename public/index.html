@@ -15,12 +15,36 @@ body {
   width: 100%;
   position: absolute;
   margin: 0;
+  font-size: 1.2rem;
   padding: 3em;
   top: 0;
   left: 0;
 }
 #shell-output {
-  overflow: auto;
+  overflow-x: clip;
+  overflow-y: auto;
+  white-space: normal;
+  word-wrap: anywhere;
+}
+.active::after {
+  content: '|';
+  animation: active linear alternate infinite 1s;
+  color: #fff;
+}
+
+@keyframes active {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  81% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 * {
   box-sizing: border-box;
