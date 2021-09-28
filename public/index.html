@@ -57,9 +57,31 @@ body {
     <script>
 const input = document.getElementById('shell-input');
 const output = document.getElementById('shell-output');
-function w(t) {
-  output.appendChild(document.createTextNode(t));
-  output.scrollTop = output.scrollHeight;
+
+const queue = [];
+let active = false;
+async function w(t, sleepTime) {
+  if (active || queue.length > 0) {
+    let r;
+    const p = new Promise(res => r = res);
+    queue.push(r);
+    await p;
+  }
+  active = true;
+  const node = output.appendChild(document.createElement('span'));
+  node.classList.add('active');
+  for (let i=1;i<t.length+1;i++) {
+    if (sleepTime > 0) await s(sleepTime);
+    node.innerText = t.substring(0,i);
+    output.scrollTop = output.scrollHeight;
+  }
+  node.classList.remove('active');
+  active = false;
+  const r = queue.pop(0);
+  if (r) r();
+}
+function s(t) {
+  return new Promise(r => setTimeout(r,t));
 }
 
 const wsURL = new URL('/shell', location.href);
@@ -67,25 +89,25 @@ wsURL.protocol = 'ws:';
 const ws = new WebSocket(wsURL);
 
 ws.addEventListener('message', function(ev) {
-  w(ev.data);
+  w(ev.data, 15);
 });
 
 ws.addEventListener('close', function() {
-  w('Connection closed...');
+  w('Connection closed...', 15);
   input.disabled = true;
 });
 
 input.addEventListener('keydown', function(ev) {
   if (ev.keyCode === 13) {
     ws.send(input.value+'\n');
-    w(input.value+'\n');
+    w(input.value+'\n', 0);
     input.value = '';
   }
 });
 input.addEventListener('compositionupdate', function(ev) {
   if (ev.data.includes('\n')) {
     ws.send(input.value);
-    w(input.value);
+    w(input.value, 0);
     input.value = '';
   }
 });
